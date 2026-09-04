@@ -94,7 +94,7 @@ const swaggerOptions = {
       description: "Week 6 Products REST API Service"
     }
   },
-  apis: ["./server.js"]
+ apis: ["./server.js", "./routes/*.js"]
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
