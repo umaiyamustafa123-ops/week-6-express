@@ -4,15 +4,33 @@ let products = [
   { id: 3, name: "Headphones", price: 8000 }
 ];
 
+const isValidId = (id) => {
+  return /^\d+$/.test(id) && Number(id) > 0;
+};
+
+const isValidPrice = (price) => {
+  return typeof price === "number" && Number.isFinite(price) && price > 0;
+};
+
 exports.getProducts = (req, res) => {
   res.status(200).json(products);
 };
 
 exports.getProductById = (req, res) => {
-  const product = products.find(p => p.id === Number(req.params.id));
+  if (!isValidId(req.params.id)) {
+    return res.status(400).json({
+      message: "Invalid product ID"
+    });
+  }
+
+  const product = products.find(
+    p => p.id === Number(req.params.id)
+  );
 
   if (!product) {
-    return res.status(404).json({ message: "Product not found" });
+    return res.status(404).json({
+      message: "Product not found"
+    });
   }
 
   res.status(200).json(product);
@@ -27,9 +45,23 @@ exports.createProduct = (req, res) => {
     });
   }
 
+  if (typeof name !== "string" || !name.trim()) {
+    return res.status(400).json({
+      message: "Name must be a non-empty string"
+    });
+  }
+
+  if (!isValidPrice(price)) {
+    return res.status(400).json({
+      message: "Price must be a positive number"
+    });
+  }
+
   const product = {
-    id: products.length ? Math.max(...products.map(p => p.id)) + 1 : 1,
-    name,
+    id: products.length
+      ? Math.max(...products.map(p => p.id)) + 1
+      : 1,
+    name: name.trim(),
     price
   };
 
@@ -39,25 +71,62 @@ exports.createProduct = (req, res) => {
 };
 
 exports.updateProduct = (req, res) => {
-  const product = products.find(p => p.id === Number(req.params.id));
-
-  if (!product) {
-    return res.status(404).json({ message: "Product not found" });
+  if (!isValidId(req.params.id)) {
+    return res.status(400).json({
+      message: "Invalid product ID"
+    });
   }
 
-  if (req.body.name !== undefined) product.name = req.body.name;
-  if (req.body.price !== undefined) product.price = req.body.price;
+  const product = products.find(
+    p => p.id === Number(req.params.id)
+  );
+
+  if (!product) {
+    return res.status(404).json({
+      message: "Product not found"
+    });
+  }
+
+  const { name, price } = req.body;
+
+  if (name !== undefined) {
+    if (typeof name !== "string" || !name.trim()) {
+      return res.status(400).json({
+        message: "Name must be a non-empty string"
+      });
+    }
+
+    product.name = name.trim();
+  }
+
+  if (price !== undefined) {
+    if (!isValidPrice(price)) {
+      return res.status(400).json({
+        message: "Price must be a positive number"
+      });
+    }
+
+    product.price = price;
+  }
 
   res.status(200).json(product);
 };
 
 exports.deleteProduct = (req, res) => {
+  if (!isValidId(req.params.id)) {
+    return res.status(400).json({
+      message: "Invalid product ID"
+    });
+  }
+
   const index = products.findIndex(
     p => p.id === Number(req.params.id)
   );
 
   if (index === -1) {
-    return res.status(404).json({ message: "Product not found" });
+    return res.status(404).json({
+      message: "Product not found"
+    });
   }
 
   const deletedProduct = products.splice(index, 1)[0];
