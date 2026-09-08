@@ -1,4 +1,5 @@
 const express = require("express");
+const path = require("path");
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsdoc = require("swagger-jsdoc");
 
@@ -99,7 +100,22 @@ const swaggerOptions = {
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
 
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use(
+  "/api-docs",
+  express.static(path.join(__dirname, "node_modules/swagger-ui-dist"))
+);
+
+app.get("/api-docs", (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "node_modules/swagger-ui-dist/index.html")
+  );
+});
+
+app.get("/api-docs/", (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "node_modules/swagger-ui-dist/index.html")
+  );
+});
 
 app.get("/", (req, res) => {
   res.json({
